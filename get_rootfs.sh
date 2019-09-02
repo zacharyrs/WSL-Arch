@@ -1,20 +1,40 @@
 #!/bin/bash
 set -ex
 
+if ! [ $(id -u) = 0 ]; then
+   echo "The script need to be run as root." >&2
+   exit 1
+fi
+
+if [ $SUDO_USER ]; then
+    real_user=$SUDO_USER
+else
+    real_user=$(whoami)
+fi
+
 # Get the current directory
+BUILDIR=$(cd `dirname $0` && pwd -P)
+
+# Prepare fakeroot-tcp as the normal (non-root) user
+sudo -u $real_user sh <<EOF
+# Get the current directory again...
 BUILDIR=$(cd `dirname $0` && pwd -P)
 
 # Get somewhere in tmp to work
 TMPDIR=$(mktemp -d)
 cd $TMPDIR
 
-# Prepare fakeroot-tcp
 # Note you'll need the dependencies for this...
 curl -LO "https://aur.archlinux.org/cgit/aur.git/snapshot/fakeroot-tcp.tar.gz"
 tar xzf "fakeroot-tcp.tar.gz"
 cd fakeroot-tcp
 makepkg
-FAKEROOT="${pwd}/${ls | grep fakeroot | grep pkg}"
+cp "$(pwd)/$(ls | grep fakeroot | grep pkg)" "$BUILDDIR/fakeroot.pkg.gz"
+EOF
+
+# Embrace the root!
+TMPDIR=$(mktemp -d)
+cd $TMPDIR
 
 # Get the base image
 ARCH="x86_64"
@@ -39,7 +59,7 @@ echo "LANGUAGE=en_US.UTF-8" >> /etc/locale.conf
 echo "LC_ALL=en_US.UTF-8" >> /etc/locale.conf
 
 # Copy over the fakeroot package
-cp $FAKEROOT tmp/
+cp "$BUILDDIR/fakeroot.pkg.gz" tmp/
 
 # Lets move to a new root!
 mount -t proc /proc proc
@@ -52,7 +72,7 @@ chroot . pacman-key --init
 chroot . pacman-key --populate archlinux
 chroot . pacman -Syu --noconfirm
 chroot . pacman -S --noconfirm sed base base-devel sudo ccache clang pigz pbzip2 git
-yes | chroot . pacman -U --force /tmp/`basename $FAKEROOT`
+yes | chroot . pacman -U --force /tmp/fakeroot.pkg.gz
 yes | chroot . pacman -Scc
 chroot . locale-gen
 
