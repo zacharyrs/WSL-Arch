@@ -10,12 +10,18 @@ This is a fork of the reference WSL image builder, configured for my ideal archl
    New-SelfSignedCertificate -Type Custom -Subject "CN=Common Name, O=Organisation, L=Somewhere, C=Country" -KeyUsage DigitalSignature -FriendlyName "Friendly Name" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
    ```
 
-2. Run `sudo get_rootfs.sh` on a Linux host to get `install.tar.gz`, this can be copied to the root of the project.
+2. Run `sudo get_rootfs.sh` on an Archlinux host to get `install.tar.gz`, this must be copied to `./x64/install.tar.gz`.
 
-3. Run `build.bat` to get the appx package.
+   Note the Archlinux host must have the necessary dependencies:
+   - `python-markdown`
+   - `arch-install-scripts`
+
+3. Run `build.bat` to get the appx package. You may specify `built.bat rel` to get a release build.
 
 4. Install the package appx package. For example, via powershell:
 
    ``` powershell
-   Add-AppxPackage x64\Release\Arch-Appx\Arch-Appx_1.0.0.0_x64_Release.appx
+   AppPackages\Arch\Arch_1.0.0.0_x64_Test\Add-AppDevPackage.ps1
    ```
+
+   Note: It seems that powershell core does not like this script.
