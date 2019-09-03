@@ -1,0 +1,10 @@
+[Trigger]
+Type = File
+Operation = Install
+Operation = Upgrade
+Target = usr/lib/initcpio/*
+
+[Action]
+Description = Don't update linux initcpios...
+When = PostTransaction
+Exec = /usr/bin/echo Zilch!
