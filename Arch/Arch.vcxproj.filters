@@ -147,7 +147,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <AppxManifest Include="Arch.appxmanifest" />
+    <AppxManifest Include="arch.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\install.tar.gz" />

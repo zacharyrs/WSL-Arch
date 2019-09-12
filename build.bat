@@ -79,11 +79,11 @@ shift
 goto :ARGS_LOOP
 
 :POST_ARGS_LOOP
-%MSBUILD% %~dp0Arch.sln /t:%_MSBUILD_TARGET% /m /nr:true /p:Configuration=%_MSBUILD_CONFIG%;Platform=x64
+%MSBUILD% %~dp0arch.sln /t:%_MSBUILD_TARGET% /m /nr:true /p:Configuration=%_MSBUILD_CONFIG%;Platform=x64
 
 if (%ERRORLEVEL%) == (0) (
     echo.
-    echo Created msix in %~dp0AppPackages\Arch\Arch_1.0.0.0_x64_Test
+    echo Created msix in %~dp0AppPackages\arch\arch_1.0.3.0_x64_Test
     echo.
 )
 
