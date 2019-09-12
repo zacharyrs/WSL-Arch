@@ -97,7 +97,7 @@ arch-chroot . locale-gen
 
 # Update the install, and add stuff!
 arch-chroot . pacman -Syu --noconfirm
-arch-chroot . pacman -S --noconfirm base base-devel sudo ccache clang pigz pbzip2 git
+arch-chroot . pacman -S --noconfirm base base-devel sudo ccache clang pigz pbzip2 git wget
 
 # Now remove and disable the linux kernel install
 arch-chroot . pacman -Rsc --noconfirm linux-firmware
