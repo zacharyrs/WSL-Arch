@@ -13,37 +13,36 @@ else
     real_user=$(whoami)
 fi
 
-
 ARCH="x86_64"
 VERSION="2019.09.01"
 IMAGE="archlinux-bootstrap-$VERSION-$ARCH.tar.gz"
 MIRROR="http://mirror.rackspace.com/archlinux/iso/$VERSION/$IMAGE"
 
+WSL=2
+
 FAKEROOT="https://aur.archlinux.org/cgit/aur.git/snapshot/fakeroot-tcp.tar.gz"
 DAEMONIZE="https://aur.archlinux.org/cgit/aur.git/snapshot/daemonize.tar.gz"
-
-HOSTESS="https://github.com/cbednarski/hostess/releases/download/v0.3.0/hostess_linux_amd64"
-GENIE="https://github.com/arkane-systems/genie/releases/download/1.12/genie.tar.gz"
+DJINN="https://github.com/zacharyrs/djinn/releases/download/v0.1.0/djinn"
 
 # Get the current directory
 BUILDDIR=$(cd `dirname $0` && pwd -P)
 
-# ! Fakeroot-tcp no longer necessary with WSL2
 # Prepare fakeroot-tcp as the normal (non-root) user
-# sudo -u $real_user sh <<EOF
-# set -e
+if [ $WSL == 1 ]; then
+sudo -u $real_user sh <<EOF
+set -e
 
-# # Get somewhere in tmp to work (as non-root)
-# cd \$(mktemp -d)
+# Get somewhere in tmp to work (as non-root)
+cd \$(mktemp -d)
 
-# # Note you'll need the dependencies for this...
-# curl -LO "${FAKEROOT}"
-# tar xzf "fakeroot-tcp.tar.gz"
-# cd fakeroot-tcp
-# makepkg
-# cp "\$(pwd)/\$(ls | grep pkg.)" "$BUILDDIR/fakeroot.pkg.gz"
-# EOF
-
+# Note you'll need the dependencies for this...
+curl -LO "${FAKEROOT}"
+tar xzf "fakeroot-tcp.tar.gz"
+cd fakeroot-tcp
+makepkg
+cp "\$(pwd)/\$(ls | grep pkg.)" "$BUILDDIR/fakeroot.pkg.gz"
+EOF
+else
 # Prepare daemonize as the normal (non-root) user
 sudo -u $real_user sh <<EOF
 set -e
@@ -60,6 +59,7 @@ makepkg
 cp "\$(pwd)/\$(ls | grep pkg.)" "$BUILDDIR/daemonize.pkg.gz"
 rm -rf \$WORKIR
 EOF
+fi
 
 # Get a new working directory (as root)
 WORKDIR=$(mktemp -d)
@@ -80,12 +80,13 @@ echo "LANG=en_US.UTF-8" > etc/locale.conf
 echo "LANGUAGE=en_US.UTF-8" >> etc/locale.conf
 echo "LC_ALL=en_US.UTF-8" >> etc/locale.conf
 
-# ! Fakeroot-tcp no longer necessary with WSL2
+if [ $WSL == 1 ]; then
 # Copy over the fakeroot package
-# cp "$BUILDDIR/fakeroot.pkg.gz" root/
-
+cp "$BUILDDIR/fakeroot.pkg.gz" root/
+else
 # Copy over the daemonize package
 cp "$BUILDDIR/daemonize.pkg.gz" root/
+fi
 
 # ...Initialise pacman
 arch-chroot . pacman-key --init
@@ -104,31 +105,29 @@ arch-chroot . pacman -Rsc --noconfirm linux-firmware
 sed -i -e 's/#IgnorePkg   =/IgnorePkg   =/' etc/pacman.conf
 rm etc/pacman.d/hooks/90-linux.hook
 
-# ! Fakeroot-tcp no longer necessary with WSL2
-# yes | arch-chroot . pacman -U /root/fakeroot.pkg.gz
-
-# We need Genie for systemd support...
-# ...Install its dependencies
-arch-chroot . pacman -S --noconfirm polkit dotnet-runtime
+if [ $WSL == 1 ]; then
+yes | arch-chroot . pacman -U /root/fakeroot.pkg.gz
+else
+arch-chroot . pacman -S --noconfirm polkit
 yes | arch-chroot . pacman -U /root/daemonize.pkg.gz
 
-curl -Lo usr/bin/hostess $HOSTESS
-arch-chroot . chmod a+rx /usr/bin/hostess
+curl -Lo usr/local/bin/djinn $DJINN
+arch-chroot . chmod u+s /usr/local/bin/djinn
+arch-chroot . chmod a+rx /usr/local/bin/
 
-# ...And install it
-cd root/
-mkdir genie && cd genie
-curl -LO $GENIE
-tar xzf `basename $GENIE`
-rm `basename $GENIE`
-cp systemd-genie/usr/bin/* ../../usr/local/bin
-cd ../../
+mkdir -p usr/local/lib/systemd/system-environment-generators/
+cat > usr/local/lib/systemd/system-environment-generators/10-djinn.sh << EOF
+#!/bin/sh
+if [ -e /run/djinn.env ]
+then
+  cat /run/djinn.env
+fi
+EOF
 
-# ...Set the permissions
-arch-chroot . chmod u+s /usr/local/bin/genie
-arch-chroot . chmod a+rx /usr/local/bin/genie
+arch-chroot . chmod a+rx /usr/local/lib/systemd/system-environment-generators/10-djinn.sh
+fi
 
-# ...Genie recommendations
+# wsl recommendations
 arch-chroot . systemctl disable getty@tty1
 
 # And make the final touches!
