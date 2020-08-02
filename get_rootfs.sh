@@ -14,7 +14,7 @@ else
 fi
 
 ARCH="x86_64"
-VERSION="2019.09.01"
+VERSION="2020.08.01"
 IMAGE="archlinux-bootstrap-$VERSION-$ARCH.tar.gz"
 MIRROR="http://mirror.rackspace.com/archlinux/iso/$VERSION/$IMAGE"
 
@@ -22,7 +22,7 @@ WSL=2
 
 FAKEROOT="https://aur.archlinux.org/cgit/aur.git/snapshot/fakeroot-tcp.tar.gz"
 DAEMONIZE="https://aur.archlinux.org/cgit/aur.git/snapshot/daemonize.tar.gz"
-DJINN="https://github.com/zacharyrs/djinn/releases/download/v0.1.0/djinn"
+DJINN="https://github.com/zacharyrs/djinn/releases/download/v0.2.1/djinn"
 
 # Get the current directory
 BUILDDIR=$(cd `dirname $0` && pwd -P)
