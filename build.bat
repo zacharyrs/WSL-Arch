@@ -2,6 +2,10 @@
 
 rem Add path to MSBuild Binaries
 set MSBUILD=()
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" (
+    set MSBUILD="%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+    goto :FOUND_MSBUILD
+)
 if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" (
     set MSBUILD="%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
     goto :FOUND_MSBUILD
@@ -83,7 +87,7 @@ goto :ARGS_LOOP
 
 if (%ERRORLEVEL%) == (0) (
     echo.
-    echo Created msix in %~dp0AppPackages\arch\arch_1.0.3.0_x64_Test
+    echo Created msix in %~dp0AppPackages\arch\arch_1.0.4.0_x64_Test
     echo.
 )
 

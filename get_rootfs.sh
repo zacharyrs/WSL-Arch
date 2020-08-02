@@ -101,7 +101,9 @@ arch-chroot . pacman -Syu --noconfirm
 arch-chroot . pacman -S --noconfirm base base-devel sudo ccache clang pigz pbzip2 git wget
 
 # Now remove and disable the linux kernel install
+if pacman -Qi linux-firmware; then
 arch-chroot . pacman -Rsc --noconfirm linux-firmware
+fi
 sed -i -e 's/#IgnorePkg   =/IgnorePkg   =/' etc/pacman.conf
 rm etc/pacman.d/hooks/90-linux.hook
 

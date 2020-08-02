@@ -22,7 +22,7 @@ This is a fork of the reference WSL image builder, configured for my ideal archl
 4. Install the package appx package. For example, via powershell:
 
    ```powershell
-   AppPackages\arch\arch_1.0.3.0_x64_Test\Add-AppDevPackage.ps1
+   AppPackages\arch\arch_1.0.4.0_x64_Test\Add-AppDevPackage.ps1
    ```
 
    Note: It seems that powershell core does not like this script.
